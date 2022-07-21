@@ -3,7 +3,7 @@ import { IUser } from '../../users/model/users.interface';
 
 
 export interface IAppointment {
-  id: string,
+  _id: string,
   date: Date,
   user: IUser,
   doctor: IDoctor,

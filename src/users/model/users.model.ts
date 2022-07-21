@@ -5,9 +5,9 @@ import { IUser } from './users.interface';
 let uuid = uuidv4();
 
 const userSchema = new Schema<IUser>({
-  id: {
+  _id: {
     type: String,
-    default: uuid
+    default: uuidv4
   },
   email: {
     type: String,
@@ -18,10 +18,17 @@ const userSchema = new Schema<IUser>({
   photo_avatar: String,
   phone: String,
   name: String, 
+  oneDay: {
+    type: Boolean,
+    default: false
+  },
+  oneHour: {
+    type: Boolean,
+    default: false
+  },
   appointments:[{
     appointmentId: {
       type: String,
-      required: true,
       ref: 'APPOINTMENTS'
     }
   }]

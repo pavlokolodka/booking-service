@@ -17,14 +17,14 @@ export class DoctorService {
         return res.status(400).send("doctorId not passed");
       }
    
-      const doctor = await this.doctorRepo.findOne({id: doctorId});
+      const doctor = await this.doctorRepo.findOne({_id: doctorId});
      
       if (doctor) {
         const numberOfappointments = doctor.appointments_accepted.length;
   
         if (!(numberOfappointments < 3)) return false;
         
-        doctor.appointments_accepted.push({appointmentId: appointment.id});
+        doctor.appointments_accepted.push({appointmentId: appointment._id});
         await doctor.save();
        
         return doctor.appointments_accepted;

@@ -5,6 +5,7 @@ import { AppointmentController } from './appointments/appointments.controller';
 
 
 
+
 const app: express.Application = express();
 const port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGODB_URI!;
@@ -15,7 +16,7 @@ app.use(express.json());
 app.use('/booking', appointmentController.router);
 
 
-(function start() {
+(async function start() {
   mongoose.connect(
     mongoURI,
     () => console.log('Connected to DB')

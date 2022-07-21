@@ -17,14 +17,15 @@ export class AppointmentService {
     private doctorRepo = Doctor,
     private userRepo = User,
     private doctorService = new DoctorService()
-    ) {}
+    ) {this.createInterval()}
    
   public async create(req: Request, res: Response) {
     try {
       const userId = req?.body?.userId;
       const doctorId = req?.body?.doctorId;
+      const date = req?.body?.date;
   
-      if (!(userId && doctorId)) {
+      if (!(userId && doctorId && date)) {
         return res.status(400).json("userId or doctorId not passed");
       }
      
@@ -32,9 +33,8 @@ export class AppointmentService {
       const doctor = await this.doctorRepo.findOne({id: doctorId});
      
       if (doctor && user) {
-        let uuid = uuidv4();
         const appointment = await this.appointmentRepo.create({
-          id: uuid,
+          date: date,
           user: userId,
           doctor: doctorId, 
           active: true
@@ -44,7 +44,7 @@ export class AppointmentService {
 
         const isFree = await this.doctorService.checkAppointments(doctorId, appointment, res); 
         if (isFree) {
-          user.appointments.push({appointmentId: appointment.id});
+          user.appointments.push({appointmentId: appointment._id});
           await user.save();
           return res.status(201).json(`
             doctorAppointment: ${isFree},
@@ -56,7 +56,7 @@ export class AppointmentService {
         }      
       }
       
-      return res.status(404).json("userId or doctorId not exist");
+      return res.status(404).json("userId or doctorId or date not exist");
     } catch (e) {
       console.log(e);
     }
@@ -74,34 +74,40 @@ export class AppointmentService {
     return true;
   }
 
-
-  private async createNotification() {
+ private async createInterval() {
     const oneDay = 86400000;
     const oneHour = 3600000;
-    while (true) {
-      const appointments = await this.appointmentRepo.find().populate('user, doctor');
-
-      setTimeout(() => {
-        appointments.forEach((appointment) => {
-          if (Number(appointment.date) === Date.now() + oneDay) {
+    setInterval(async () => {
+      const appointments = await this.appointmentRepo.find().populate('user').populate('doctor');
+      appointments.forEach(async (appointment) => {
+        if (!appointment.user.oneDay) {
+          if (Number(appointment.date) <= Date.now() + oneDay) {
+            const user = await this.userRepo.findOne({_id: appointment.user._id});
+            user!.oneDay = true;
             const dataOneDay = `${Date.now()} | Привет ${appointment.user.name}! Напоминаем что вы записаны к ${appointment.doctor.spec} завтра в ${appointment.date}!`
             fs.writeFile(path.resolve(__dirname, 'notification.log'), dataOneDay, err => {
               if (err) {
                 console.error(err);
               }
             });
+            await user!.save();
           }
-          else if (Number(appointment.date) === Date.now() + oneHour) {
+        }
+        else if (!appointment.user.oneHour) {
+          if (Number(appointment.date) <= Date.now() + oneHour) {
+            const user = await this.userRepo.findOne({_id: appointment.user._id});
+            user!.oneHour = true;
             const dataOneDay = `${Date.now()} | Привет ${appointment.user.name}! Вам через 2 часа к ${appointment.doctor.spec}  в ${appointment.date}!`
             fs.writeFile(path.resolve(__dirname, 'notification.log'), dataOneDay, err => {
               if (err) {
                 console.error(err);
               }
             });
+            await user!.save();
           }
-        })
-      }, 300000);
-      
-    }
+        }
+      })
+    }, oneHour);
   }
 }
+

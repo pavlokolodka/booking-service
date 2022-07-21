@@ -6,9 +6,9 @@ import { IDoctor } from './doctors.interface';
 let uuid = uuidv4();
 
 const doctorSchema = new Schema<IDoctor>({
-  id: {
+  _id: {
     type: String,
-    default: uuid
+    default: uuidv4
   },
   email: {
     type: String,
@@ -22,12 +22,11 @@ const doctorSchema = new Schema<IDoctor>({
   spec: String,
   free: {
     type: Boolean,
-    default: false
+    default: true
   },
   appointments_accepted: [{
     appointmentId: {
       type: String,
-      required: true,
       ref: 'APPOINTMENTS'
     }
   }]

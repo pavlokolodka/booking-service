@@ -5,9 +5,9 @@ import {v4 as uuidv4} from 'uuid';
 let uuid = uuidv4();
 
 const appointmentsSchema = new Schema<IAppointment>({
-  id: {
+  _id: {
     type: String,
-    default: uuid
+    default: uuidv4
   },
   date: {
     type: Date,
@@ -15,12 +15,10 @@ const appointmentsSchema = new Schema<IAppointment>({
   },
   user: {
     type: String,
-    required: true,
     ref: 'USER'
   },
   doctor: {
     type: String,
-    required: true,
     ref: 'DOCTOR'
   },
   active: {
